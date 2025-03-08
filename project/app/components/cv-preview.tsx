@@ -9,9 +9,10 @@ import jsPDF from "jspdf";
 
 interface CVPreviewProps {
   data: CVData;
+  isCircular: boolean;
 }
 
-export default function CVPreview({ data }: CVPreviewProps) {
+export default function CVPreview({ data, isCircular }: CVPreviewProps) {
   const targetRef = useRef<HTMLDivElement>(null);
 
   const generatePDF = async () => {
@@ -19,12 +20,12 @@ export default function CVPreview({ data }: CVPreviewProps) {
 
     try {
       const canvas = await html2canvas(targetRef.current, {
-        scale: 2, // Higher scale for better quality
-        useCORS: true, // Enable CORS for images
+        scale: 2, // Høyere skala for bedre kvalitet
+        useCORS: true, // Aktiver CORS for bilder
         logging: false,
       });
 
-      const imgWidth = 210; // A4 width in mm
+      const imgWidth = 210; // A4 bredde i mm
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
       
       const pdf = new jsPDF('p', 'mm', 'a4');
@@ -39,14 +40,14 @@ export default function CVPreview({ data }: CVPreviewProps) {
       
       pdf.save('cv.pdf');
     } catch (error) {
-      console.error('Error generating PDF:', error);
+      console.error('Feil ved generering av PDF:', error);
     }
   };
 
   return (
     <div className="space-y-4">
       <Button onClick={generatePDF} className="w-full">
-        Download PDF
+        Last ned PDF
       </Button>
       
       <Card className="p-8" ref={targetRef}>
@@ -55,8 +56,8 @@ export default function CVPreview({ data }: CVPreviewProps) {
             {data.profileImage && (
               <img
                 src={data.profileImage}
-                alt="Profile"
-                className="w-32 h-32 rounded-full object-cover"
+                alt="Profil"
+                className={`w-32 h-32 object-cover ${isCircular ? 'rounded-full' : 'rounded-md'}`}
                 crossOrigin="anonymous"
               />
             )}
@@ -73,12 +74,12 @@ export default function CVPreview({ data }: CVPreviewProps) {
           </div>
 
           <div>
-            <h2 className="text-xl font-semibold mb-2">Professional Summary</h2>
+            <h2 className="text-xl font-semibold mb-2">Profesjonell sammendrag</h2>
             <p className="text-muted-foreground">{data.summary}</p>
           </div>
 
           <div>
-            <h2 className="text-xl font-semibold mb-4">Education</h2>
+            <h2 className="text-xl font-semibold mb-4">Utdanning</h2>
             <div className="space-y-4">
               {data.education.map((edu, index) => (
                 <div key={index} className="space-y-2">
@@ -96,7 +97,7 @@ export default function CVPreview({ data }: CVPreviewProps) {
           </div>
 
           <div>
-            <h2 className="text-xl font-semibold mb-4">Skills</h2>
+            <h2 className="text-xl font-semibold mb-4">Ferdigheter</h2>
             <div className="grid grid-cols-2 gap-4">
               {data.skills.map((skill, index) => (
                 <div key={index} className="space-y-2">

@@ -9,155 +9,193 @@ import { Slider } from "@/components/ui/slider";
 import { Card } from "@/components/ui/card";
 import { Plus, Trash2 } from "lucide-react";
 import { CVData, Education, Skill } from "../types/cv";
+import { Switch } from "@/components/ui/switch";
 
 interface CVFormProps {
+  data: CVData;
+  onChange: (data: CVData) => void;
   onSubmit: (data: CVData) => void;
+  isCircular: boolean;
+  onImageShapeChange: (isCircular: boolean) => void;
 }
 
-export default function CVForm({ onSubmit }: CVFormProps) {
-  const [profileImage, setProfileImage] = useState<string>("");
-  const [title, setTitle] = useState("");
-  const [summary, setSummary] = useState("");
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [location, setLocation] = useState("");
-  const [education, setEducation] = useState<Education[]>([]);
-  const [skills, setSkills] = useState<Skill[]>([]);
-
+export default function CVForm({ data, onChange, onSubmit, isCircular, onImageShapeChange }: CVFormProps) {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setProfileImage(reader.result as string);
+        handleChange({ ...data, profileImage: reader.result as string });
       };
       reader.readAsDataURL(file);
     }
   };
 
+  const handleChange = (newData: CVData) => {
+    onChange(newData);
+  };
+
   const addEducation = () => {
-    setEducation([
-      ...education,
-      { institution: "", degree: "", startDate: "", endDate: "", description: "" },
-    ]);
+    handleChange({
+      ...data,
+      education: [
+        ...data.education,
+        { institution: "", degree: "", startDate: "", endDate: "", description: "" },
+      ],
+    });
   };
 
   const updateEducation = (index: number, field: keyof Education, value: string) => {
-    const newEducation = [...education];
+    const newEducation = [...data.education];
     newEducation[index] = { ...newEducation[index], [field]: value };
-    setEducation(newEducation);
+    handleChange({ ...data, education: newEducation });
   };
 
   const removeEducation = (index: number) => {
-    setEducation(education.filter((_, i) => i !== index));
+    handleChange({
+      ...data,
+      education: data.education.filter((_, i) => i !== index),
+    });
   };
 
   const addSkill = () => {
-    setSkills([...skills, { name: "", level: 50 }]);
+    handleChange({
+      ...data,
+      skills: [...data.skills, { name: "", level: 50 }],
+    });
   };
 
   const updateSkill = (index: number, field: keyof Skill, value: string | number) => {
-    const newSkills = [...skills];
+    const newSkills = [...data.skills];
     newSkills[index] = { ...newSkills[index], [field]: value };
-    setSkills(newSkills);
+    handleChange({ ...data, skills: newSkills });
   };
 
   const removeSkill = (index: number) => {
-    setSkills(skills.filter((_, i) => i !== index));
+    handleChange({
+      ...data,
+      skills: data.skills.filter((_, i) => i !== index),
+    });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({
-      profileImage,
-      title,
-      summary,
-      personalInfo: { name, email, phone, location },
-      education,
-      skills,
-    });
+    onSubmit(data);
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold">Profile Image</h2>
+        <h2 className="text-2xl font-bold">Profilbilde</h2>
         <div className="flex items-center space-x-4">
-          {profileImage && (
+          {data.profileImage && (
             <img
-              src={profileImage}
-              alt="Profile"
-              className="w-24 h-24 rounded-full object-cover"
+              src={data.profileImage}
+              alt="Profil"
+              className={`w-24 h-24 object-cover ${isCircular ? 'rounded-full' : 'rounded-md'}`}
             />
           )}
-          <Input
-            type="file"
-            accept="image/*"
-            onChange={handleImageUpload}
-            className="max-w-xs"
-          />
+          <div className="space-y-2">
+            <Input
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="max-w-xs"
+            />
+            <div className="space-y-2">
+              <Label htmlFor="image-shape" className="cursor-pointer">
+                Bytt bildeform
+              </Label>
+            <div className="flex items-center space-x-2">
+              <Switch
+                checked={isCircular}
+                onCheckedChange={onImageShapeChange}
+                id="image-shape"
+                />
+            </div>
+        </div>
+          </div>
         </div>
       </div>
 
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold">Basic Information</h2>
+        <h2 className="text-2xl font-bold">Grunnleggende informasjon</h2>
         <div className="grid gap-4">
           <div>
-            <Label htmlFor="title">Professional Title</Label>
+            <Label htmlFor="title">Yrkestittel</Label>
             <Input
               id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g., Senior Software Engineer"
+              value={data.title}
+              onChange={(e) => handleChange({ ...data, title: e.target.value })}
+              placeholder="f.eks., Senior Programvareutvikler"
             />
           </div>
           <div>
-            <Label htmlFor="summary">Professional Summary</Label>
+            <Label htmlFor="summary">Profesjonell sammendrag</Label>
             <Textarea
               id="summary"
-              value={summary}
-              onChange={(e) => setSummary(e.target.value)}
-              placeholder="Brief overview of your professional background"
+              value={data.summary}
+              onChange={(e) => handleChange({ ...data, summary: e.target.value })}
+              placeholder="Kort oversikt over din profesjonelle bakgrunn"
             />
           </div>
         </div>
       </div>
 
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold">Personal Information</h2>
+        <h2 className="text-2xl font-bold">Personlig informasjon</h2>
         <div className="grid gap-4 md:grid-cols-2">
           <div>
-            <Label htmlFor="name">Full Name</Label>
+            <Label htmlFor="name">Fullt navn</Label>
             <Input
               id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              value={data.personalInfo.name}
+              onChange={(e) =>
+                handleChange({
+                  ...data,
+                  personalInfo: { ...data.personalInfo, name: e.target.value },
+                })
+              }
             />
           </div>
           <div>
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">E-post</Label>
             <Input
               id="email"
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={data.personalInfo.email}
+              onChange={(e) =>
+                handleChange({
+                  ...data,
+                  personalInfo: { ...data.personalInfo, email: e.target.value },
+                })
+              }
             />
           </div>
           <div>
-            <Label htmlFor="phone">Phone</Label>
+            <Label htmlFor="phone">Telefon</Label>
             <Input
               id="phone"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              value={data.personalInfo.phone}
+              onChange={(e) =>
+                handleChange({
+                  ...data,
+                  personalInfo: { ...data.personalInfo, phone: e.target.value },
+                })
+              }
             />
           </div>
           <div>
-            <Label htmlFor="location">Location</Label>
+            <Label htmlFor="location">Sted</Label>
             <Input
               id="location"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
+              value={data.personalInfo.location}
+              onChange={(e) =>
+                handleChange({
+                  ...data,
+                  personalInfo: { ...data.personalInfo, location: e.target.value },
+                })
+              }
             />
           </div>
         </div>
@@ -165,13 +203,13 @@ export default function CVForm({ onSubmit }: CVFormProps) {
 
       <div className="space-y-4">
         <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold">Education</h2>
+          <h2 className="text-2xl font-bold">Utdanning</h2>
           <Button type="button" onClick={addEducation} size="sm">
-            <Plus className="w-4 h-4 mr-2" /> Add Education
+            <Plus className="w-4 h-4 mr-2" /> Legg til utdanning
           </Button>
         </div>
         <div className="space-y-4">
-          {education.map((edu, index) => (
+          {data.education.map((edu, index) => (
             <Card key={index} className="p-4">
               <div className="grid gap-4">
                 <div className="flex justify-end">
@@ -185,12 +223,12 @@ export default function CVForm({ onSubmit }: CVFormProps) {
                   </Button>
                 </div>
                 <Input
-                  placeholder="Institution"
+                  placeholder="Institusjon"
                   value={edu.institution}
                   onChange={(e) => updateEducation(index, "institution", e.target.value)}
                 />
                 <Input
-                  placeholder="Degree"
+                  placeholder="Grad"
                   value={edu.degree}
                   onChange={(e) => updateEducation(index, "degree", e.target.value)}
                 />
@@ -207,7 +245,7 @@ export default function CVForm({ onSubmit }: CVFormProps) {
                   />
                 </div>
                 <Textarea
-                  placeholder="Description"
+                  placeholder="Beskrivelse"
                   value={edu.description}
                   onChange={(e) => updateEducation(index, "description", e.target.value)}
                 />
@@ -219,13 +257,13 @@ export default function CVForm({ onSubmit }: CVFormProps) {
 
       <div className="space-y-4">
         <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold">Skills</h2>
+          <h2 className="text-2xl font-bold">Ferdigheter</h2>
           <Button type="button" onClick={addSkill} size="sm">
-            <Plus className="w-4 h-4 mr-2" /> Add Skill
+            <Plus className="w-4 h-4 mr-2" /> Legg til ferdighet
           </Button>
         </div>
         <div className="space-y-4">
-          {skills.map((skill, index) => (
+          {data.skills.map((skill, index) => (
             <Card key={index} className="p-4">
               <div className="grid gap-4">
                 <div className="flex justify-end">
@@ -239,12 +277,12 @@ export default function CVForm({ onSubmit }: CVFormProps) {
                   </Button>
                 </div>
                 <Input
-                  placeholder="Skill name"
+                  placeholder="Ferdighetsnavn"
                   value={skill.name}
                   onChange={(e) => updateSkill(index, "name", e.target.value)}
                 />
                 <div className="space-y-2">
-                  <Label>Proficiency Level</Label>
+                  <Label>Ferdighetsnivå</Label>
                   <Slider
                     value={[skill.level]}
                     onValueChange={(value) => updateSkill(index, "level", value[0])}
@@ -258,7 +296,7 @@ export default function CVForm({ onSubmit }: CVFormProps) {
         </div>
       </div>
 
-      <Button type="submit" className="w-full">Generate CV</Button>
+      <Button type="submit" className="w-full">Generer CV</Button>
     </form>
   );
 }
