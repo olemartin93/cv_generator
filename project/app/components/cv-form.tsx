@@ -102,18 +102,14 @@ export default function CVForm({ data, onChange, onSubmit, isCircular, onImageSh
               onChange={handleImageUpload}
               className="max-w-xs"
             />
-            <div className="space-y-2">
-              <Label htmlFor="image-shape" className="cursor-pointer">
-                Bytt bildeform
-              </Label>
-            <div className="flex items-center space-x-2">
-              <Switch
-                checked={isCircular}
-                onCheckedChange={onImageShapeChange}
-                id="image-shape"
-                />
-            </div>
-        </div>
+            <Label htmlFor="image-shape" className="cursor-pointer">
+              Bytt bildeform
+            </Label>
+            <Switch
+              checked={isCircular}
+              onCheckedChange={onImageShapeChange}
+              id="image-shape"
+            />
           </div>
         </div>
       </div>
